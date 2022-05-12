@@ -4,7 +4,7 @@ import { settings } from './config/settings.js';
 import { AutoBind } from './utility/autobind-decorator.js';
 
 export const state = {
-  turn: true,
+  turn: true, // turn: true = crosses turn, false for circle
   victory: false,
   score: {
     cross: 0,
@@ -12,6 +12,7 @@ export const state = {
   },
 };
 
+type victoryInfo = { winner: boolean; player: boolean };
 class Game {
   turnSpan: HTMLSpanElement;
   resetBtn: HTMLButtonElement;
@@ -27,14 +28,17 @@ class Game {
     this.resetBtn = document.getElementById('reset') as HTMLButtonElement;
     this.container = document.getElementById('container') as HTMLDivElement;
 
+    // Create cell divs for HTML based on board size
     for (let i = 0; i < settings.boardSize * settings.boardSize; i++) {
       const div = document.createElement('div');
       div.classList.add('cell', 'center');
       this.container.appendChild(div);
     }
+    // Create board and pass down the turnChangeHandler reference (to Cells)
+    this.board = new Board(this.turnChangeHandler);
 
-    this.board = new Board(this.changeTurn);
     this.turnSpan.textContent = settings.getSymbol(state.turn);
+    // Initialize score board
     this.scoreCross.textContent = settings.getScoreText(
       true,
       state.score.cross
@@ -48,27 +52,13 @@ class Game {
   }
 
   @AutoBind
-  changeTurn() {
-    const victoryState = this.checkVictory(this.board.cells);
-    if (!victoryState.winner) {
+  turnChangeHandler() {
+    const victoryState = this.checkVictory(this.board.cells); // Check if winner was found last turn
+    if (victoryState.winner) {
+      this.handleVictory(victoryState);
+    } else {
       state.turn = !state.turn;
       this.turnSpan.textContent = settings.getSymbol(state.turn);
-    } else {
-      state.victory = true;
-      if (victoryState)
-        if (victoryState.player) {
-          state.score.cross += 1;
-          this.scoreCross.textContent = settings.getScoreText(
-            true,
-            state.score.cross
-          );
-        } else {
-          state.score.circle += 1;
-          this.scoreCircle.textContent = settings.getScoreText(
-            false,
-            state.score.circle
-          );
-        }
     }
   }
 
@@ -80,10 +70,10 @@ class Game {
     this.turnSpan.textContent = settings.getSymbol(state.turn);
   }
 
-  checkVictory(cells: Cell[][]) {
+  checkVictory(cells: Cell[][]): victoryInfo {
     // Checks if any of the slices (column/row/diagonal)
     // and if any do have victory: highlight that slice
-    const checkSlices = (...slices: Cell[][]) => {
+    const checkSlices = (...slices: Cell[][]): victoryInfo => {
       for (const slc of slices) {
         // check if all cells are filled
         if (!slc.some((cell) => cell.empty)) {
@@ -133,6 +123,24 @@ class Game {
       return result;
     }
     return { winner: false, player: true }; // no winner found
+  }
+
+  handleVictory(info: victoryInfo) {
+    state.victory = true;
+    if (info)
+      if (info.player) {
+        state.score.cross += 1;
+        this.scoreCross.textContent = settings.getScoreText(
+          true,
+          state.score.cross
+        );
+      } else {
+        state.score.circle += 1;
+        this.scoreCircle.textContent = settings.getScoreText(
+          false,
+          state.score.circle
+        );
+      }
   }
 }
 

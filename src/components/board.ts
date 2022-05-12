@@ -9,7 +9,7 @@ export class Board {
     const cellDivs = [
       ...document.getElementById('container')!.children,
     ] as HTMLDivElement[];
-
+    // Create matrix of Cell objects based on HTML 'cell'-divs
     for (let i = 0; i < cellDivs.length; i += settings.boardSize) {
       const row = cellDivs.slice(i, i + settings.boardSize);
       this.cells.push(row.map((div) => new Cell(div, updateTurn)));
@@ -17,7 +17,7 @@ export class Board {
   }
 
   resetCells() {
-    // loop through 2d array and reset every cell
+    // Loop through 2d array and reset every cell
     this.cells.map((row) => row.map((cell) => cell.reset()));
   }
 }

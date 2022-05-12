@@ -1,14 +1,18 @@
 export const settings = {
+  // symbol text for rendering to board
   symbol: {
     cross: '🍏',
     circle: '🍊',
   },
+  // css class names for symbols
   css: {
     cross: 'cross',
     circle: 'circle',
   },
-  boardSize: 3,
+  // css class name for victory highlight styling
   victoryCss: 'victory',
+
+  boardSize: 3,
 
   // HELPER FUNCTIONS THAT RETURN DATA BASED ON SETTINGS
   getSymbol: (player: boolean) => {
